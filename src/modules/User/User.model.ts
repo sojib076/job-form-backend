@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 import { Iuser } from "./User.interface";
 
 const userSchema: Schema <Iuser> = new mongoose.Schema({
@@ -32,3 +32,38 @@ const userSchema: Schema <Iuser> = new mongoose.Schema({
 
 export default mongoose.model('UserModel', userSchema);
 
+
+
+export interface IUserFunctions extends Document {
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const userApplicationSchema = new Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",   
+      required: true,
+    },
+    jobId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "JobModel",
+      required: true,
+    },
+    appliedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { timestamps: true }
+);
+
+export const UserApplicationModel = mongoose.model(
+  "UserApplication",
+  userApplicationSchema
+);

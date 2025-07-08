@@ -7,8 +7,8 @@ exports.AdminRoute = void 0;
 const express_1 = __importDefault(require("express"));
 const Admin_controller_1 = require("./Admin.controller");
 const router = express_1.default.Router();
-// @route   POST /api/v1/jobs
-// @desc    Admin can post a new job
-// @access  Admin only (auth middleware can be added later)
 router.post("/admin-post", Admin_controller_1.AdminJobController.postJob);
+router.patch("/:id", Admin_controller_1.AdminJobController.updateJob);
+router.delete("/:id", Admin_controller_1.AdminJobController.deleteJob);
+router.get("/", Admin_controller_1.AdminJobController.getAllJobs);
 exports.AdminRoute = router;
