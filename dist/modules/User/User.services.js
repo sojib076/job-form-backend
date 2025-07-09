@@ -31,7 +31,7 @@ const getAllApplications = (userId, page, limit) => __awaiter(void 0, void 0, vo
     const skip = (pageNum - 1) * limitNum;
     const [applications, total] = yield Promise.all([
         User_model_1.UserApplicationModel.find({ userId })
-            .populate("jobId", "position companyName location")
+            .populate("jobId", "position companyName location postion contract")
             .skip(skip)
             .limit(limitNum),
         User_model_1.UserApplicationModel.countDocuments({ userId }),

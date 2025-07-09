@@ -26,7 +26,7 @@ export const getAllApplications = async (userId: string, page:string, limit:stri
   const skip = (pageNum - 1) * limitNum;
   const [applications, total] = await Promise.all([
     UserApplicationModel.find({ userId })
-      .populate("jobId", "position companyName location")
+      .populate("jobId", "position companyName location postion contract")
       .skip(skip)
       .limit(limitNum),
     UserApplicationModel.countDocuments({ userId }),
