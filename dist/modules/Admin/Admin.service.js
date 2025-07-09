@@ -70,7 +70,8 @@ const updateJob = (req) => __awaiter(void 0, void 0, void 0, function* () {
     if (!updatedJob) {
         return new AppError_1.default(404, 'Job not found');
     }
-    return exports.updateJob;
+    console.log("Updated Job:", updatedJob);
+    return updatedJob;
 });
 exports.updateJob = updateJob;
 const deleteJob = (userId) => __awaiter(void 0, void 0, void 0, function* () {

@@ -74,7 +74,8 @@ export const updateJob = async (req:Request) => {
     if (!updatedJob) {
       return new AppError(404, 'Job not found'); 
     }
-    return updateJob
+    console.log("Updated Job:", updatedJob);
+    return updatedJob;
 };
 
 
