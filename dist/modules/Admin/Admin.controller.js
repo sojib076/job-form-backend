@@ -18,7 +18,9 @@ const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const asyncHandler_1 = require("../../utils/asyncHandler");
 const Admin_service_1 = require("./Admin.service");
 exports.postJob = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield Admin_service_1.AdminJobService.createJob(req.body);
+    const { user } = req;
+    const userId = user === null || user === void 0 ? void 0 : user._id;
+    const result = yield Admin_service_1.AdminJobService.createJob(req.body, userId);
     if (!result) {
         return (0, sendResponse_1.default)(res, {
             statusCode: http_status_1.default.BAD_REQUEST,
@@ -35,10 +37,7 @@ exports.postJob = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(void 
     });
 }));
 exports.getAllJobs = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const authraization = req.headers.authorization;
-    console.log("Authorization Header:", authraization);
     const result = yield Admin_service_1.AdminJobService.getAllJobs(req);
-    console.log(result);
     if (!result) {
         return (0, sendResponse_1.default)(res, {
             statusCode: http_status_1.default.NOT_FOUND,

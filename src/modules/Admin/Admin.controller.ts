@@ -7,8 +7,10 @@ import { AdminJobService } from "./Admin.service";
 import { Request } from "express";
 
 export const postJob = asyncHandler(async (req, res) => {
-  const result = await AdminJobService.createJob(req.body);
-
+  
+  const { user } = req;
+  const userId = user?._id;
+const result = await AdminJobService.createJob(req.body ,userId );
   if (!result) {
     return sendResponse(res, {
       statusCode: httpStatus.BAD_REQUEST,
@@ -27,11 +29,7 @@ export const postJob = asyncHandler(async (req, res) => {
 });
 
 export const getAllJobs = asyncHandler(async (req, res) => {
-  const authraization = req.headers.authorization;
-  console.log("Authorization Header:", authraization);
   const result = await AdminJobService.getAllJobs(req as Request);
-
-  console.log(result);
 
   if (!result) {
     return sendResponse(res, {

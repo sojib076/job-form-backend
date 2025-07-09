@@ -12,15 +12,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AdminJobService = exports.updateJob = exports.getAllJobs = void 0;
+exports.AdminJobService = exports.deleteJob = exports.updateJob = exports.getAllJobs = void 0;
 const Admin_model_1 = __importDefault(require("./Admin.model"));
 const AppError_1 = __importDefault(require("../../error/AppError"));
-const createJob = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const job = yield Admin_model_1.default.create(payload);
+const User_model_1 = require("../User/User.model");
+const mongoose_1 = __importDefault(require("mongoose"));
+const createJob = (payload, userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const job = yield Admin_model_1.default.create(Object.assign(Object.assign({}, payload), { userId }));
     return job;
 });
 const getAllJobs = (req) => __awaiter(void 0, void 0, void 0, function* () {
-    const { companyName, location, contract, page = "1", limit = "10" } = req.query;
+    const { companyName, location, contract, page = "1", limit = "10", userId } = req.query;
+    console.log("Query Parameters:", req.query);
     const filter = {};
     if (companyName) {
         filter.companyName = { $regex: new RegExp(companyName, "i") };
@@ -31,13 +34,20 @@ const getAllJobs = (req) => __awaiter(void 0, void 0, void 0, function* () {
     if (contract) {
         filter.contract = { $regex: new RegExp(`^${contract}$`, "i") };
     }
+    if (contract === "All types") {
+        delete filter.contract;
+    }
+    if (userId) {
+        console.log("User ID:", userId);
+        filter.userId = userId;
+    }
     const pageNum = parseInt(page, 10) || 1;
     const limitNum = parseInt(limit, 10) || 10;
     const skip = (pageNum - 1) * limitNum;
     const jobs = yield Admin_model_1.default.find(filter)
         .skip(skip)
         .limit(limitNum)
-        .sort({ createdAt: -1 }); // Optional: newest first
+        .sort({ createdAt: -1 });
     const total = yield Admin_model_1.default.countDocuments(filter);
     return {
         meta: {
@@ -63,16 +73,33 @@ const updateJob = (req) => __awaiter(void 0, void 0, void 0, function* () {
     return exports.updateJob;
 });
 exports.updateJob = updateJob;
-const deleteJob = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    const deletedJob = yield Admin_model_1.default.findByIdAndDelete(id);
-    if (!deletedJob) {
-        return new AppError_1.default(404, 'Job not found');
+const deleteJob = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = userId;
+    const session = yield mongoose_1.default.startSession();
+    session.startTransaction();
+    try {
+        // Step 1: Delete the Job
+        const deletedJob = yield Admin_model_1.default.findByIdAndDelete(id, { session });
+        if (!deletedJob) {
+            throw new AppError_1.default(404, "Job not found");
+        }
+        // Step 2: Delete related applications (0 or more — it's fine)
+        yield User_model_1.UserApplicationModel.deleteMany({ jobId: id }, { session });
+        // Step 3: Commit transaction
+        yield session.commitTransaction();
+        session.endSession();
+        return deletedJob._id; // optional
     }
-    return deletedJob;
+    catch (error) {
+        yield session.abortTransaction();
+        session.endSession();
+        throw error;
+    }
 });
+exports.deleteJob = deleteJob;
 exports.AdminJobService = {
     createJob,
     getAllJobs: exports.getAllJobs,
     updateJob: exports.updateJob,
-    deleteJob
+    deleteJob: exports.deleteJob
 };

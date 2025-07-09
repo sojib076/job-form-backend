@@ -3,14 +3,23 @@ import { Request } from "express";
 import { IJob } from "./Admin.model";
 import JobModel from "./Admin.model";
 import AppError from "../../error/AppError";
+import { UserApplicationModel } from "../User/User.model";
+import mongoose from "mongoose";
 
 
-const createJob = async (payload: IJob): Promise<IJob> => {
-  const job = await JobModel.create(payload);
+const createJob = async (payload: IJob , userId :string): Promise<IJob> => {
+  const job = await JobModel.create(
+    {
+      ...payload,
+      userId,
+    }
+  );
   return job;
 };
 export const getAllJobs = async (req: Request) => {
-  const { companyName, location, contract, page = "1", limit = "10" } = req.query;
+  const { companyName, location, contract, page = "1", limit = "10" ,userId } = req.query;
+  
+  console.log("Query Parameters:", req.query);
 
   const filter: any = {};
 
@@ -22,10 +31,16 @@ export const getAllJobs = async (req: Request) => {
     filter.location = { $regex: new RegExp(location as string, "i") };
   }
 
-  if (contract) {
+  if ( contract) {
     filter.contract = { $regex: new RegExp(`^${contract}$`, "i") };
   }
-
+  if (contract === "All types") {
+    delete filter.contract;
+  }
+  if (userId) {
+    console.log("User ID:", userId);
+    filter.userId = userId;
+  }
 
   const pageNum = parseInt(page as string, 10) || 1;
   const limitNum = parseInt(limit as string, 10) || 10;
@@ -34,9 +49,8 @@ export const getAllJobs = async (req: Request) => {
   const jobs = await JobModel.find(filter)
     .skip(skip)
     .limit(limitNum)
-    .sort({ createdAt: -1 }); // Optional: newest first
+    .sort({ createdAt: -1 }); 
     
-
   const total = await JobModel.countDocuments(filter);
 
   return {
@@ -64,14 +78,31 @@ export const updateJob = async (req:Request) => {
 };
 
 
-  const deleteJob = async (id) => {
-  const deletedJob = await JobModel.findByIdAndDelete(id);
-  if (!deletedJob) {
-    return new AppError(404, 'Job not found');
+export const deleteJob = async (userId:string) => {
+const id  = userId
+const session = await mongoose.startSession();
+session.startTransaction();
+
+  try {
+    // Step 1: Delete the Job
+    const deletedJob = await JobModel.findByIdAndDelete(id, { session });
+    if (!deletedJob) {
+      throw new AppError(404, "Job not found");
+    }
+
+    // Step 2: Delete related applications (0 or more — it's fine)
+    await UserApplicationModel.deleteMany({ jobId: id }, { session });
+    // Step 3: Commit transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    return deletedJob._id; // optional
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
   }
-    
-  return deletedJob;
-  }
+};
 
 export const AdminJobService = {
   createJob,
