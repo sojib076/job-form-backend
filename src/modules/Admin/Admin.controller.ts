@@ -30,7 +30,6 @@ const result = await AdminJobService.createJob(req.body ,userId );
 
 export const getAllJobs = asyncHandler(async (req, res) => {
   const result = await AdminJobService.getAllJobs(req as Request);
-
   if (!result) {
     return sendResponse(res, {
       statusCode: httpStatus.NOT_FOUND,

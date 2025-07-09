@@ -23,7 +23,6 @@ const createJob = (payload, userId) => __awaiter(void 0, void 0, void 0, functio
 });
 const getAllJobs = (req) => __awaiter(void 0, void 0, void 0, function* () {
     const { companyName, location, contract, page = "1", limit = "10", userId } = req.query;
-    console.log("Query Parameters:", req.query);
     const filter = {};
     if (companyName) {
         filter.companyName = { $regex: new RegExp(companyName, "i") };

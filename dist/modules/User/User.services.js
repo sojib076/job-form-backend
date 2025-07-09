@@ -24,13 +24,30 @@ const applyForJob = (userId, jobId) => __awaiter(void 0, void 0, void 0, functio
     return application;
 });
 exports.applyForJob = applyForJob;
-const getAllApplications = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    const applications = yield User_model_1.UserApplicationModel.find({ userId })
-        .populate("jobId", "position companyName location");
+const getAllApplications = (userId, page, limit) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("Fetching applications for user:", userId, page, limit);
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 3) || 3;
+    const skip = (pageNum - 1) * limitNum;
+    const [applications, total] = yield Promise.all([
+        User_model_1.UserApplicationModel.find({ userId })
+            .populate("jobId", "position companyName location")
+            .skip(skip)
+            .limit(limitNum),
+        User_model_1.UserApplicationModel.countDocuments({ userId }),
+    ]);
     if (!applications || applications.length === 0) {
         throw new Error("No applications found for this user.");
     }
-    return applications;
+    return {
+        applications,
+        meta: {
+            totalItems: total,
+            itemsPerPage: limit,
+            totalPages: Math.ceil(total / limitNum),
+            page,
+        },
+    };
 });
 exports.getAllApplications = getAllApplications;
 const getAppliedJobsByUser = (req) => __awaiter(void 0, void 0, void 0, function* () {

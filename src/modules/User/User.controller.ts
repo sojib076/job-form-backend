@@ -36,7 +36,7 @@ export const applyForJob = asyncHandler(async (req, res) => {
 
 
 export const getAllApplications = asyncHandler(async (req, res) => {
-    const { userId } = req.query;
+    const { userId ,page , limit } = req.query;
     if (!userId) {
         return sendResponse(res, {
             statusCode: httpStatus.BAD_REQUEST,
@@ -46,8 +46,8 @@ export const getAllApplications = asyncHandler(async (req, res) => {
         });
     }
 
-    const applications = await UserJobService.getAllApplications(userId as string);
-    if (!applications || applications.length === 0) {
+    const applications = await UserJobService.getAllApplications(userId as string , page as string, limit as string);
+    if (!applications ) {
         return sendResponse(res, {
             statusCode: httpStatus.NOT_FOUND,
             success: false,

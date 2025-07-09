@@ -44,7 +44,7 @@ exports.applyForJob = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(v
     });
 }));
 exports.getAllApplications = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId } = req.query;
+    const { userId, page, limit } = req.query;
     if (!userId) {
         return (0, sendResponse_1.default)(res, {
             statusCode: http_status_1.default.BAD_REQUEST,
@@ -53,8 +53,8 @@ exports.getAllApplications = (0, asyncHandler_1.asyncHandler)((req, res) => __aw
             data: {},
         });
     }
-    const applications = yield User_services_1.UserJobService.getAllApplications(userId);
-    if (!applications || applications.length === 0) {
+    const applications = yield User_services_1.UserJobService.getAllApplications(userId, page, limit);
+    if (!applications) {
         return (0, sendResponse_1.default)(res, {
             statusCode: http_status_1.default.NOT_FOUND,
             success: false,

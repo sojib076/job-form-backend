@@ -19,15 +19,34 @@ export const applyForJob = async (userId: string, jobId: string) => {
 
   return application;
 };
-export const getAllApplications = async (userId:string) => {
+export const getAllApplications = async (userId: string, page:string, limit:string) => {
+  console.log("Fetching applications for user:", userId , page, limit);
+    const pageNum = parseInt(page as string, 10) || 1;
+  const limitNum = parseInt(limit as string, 3) || 3;
+  const skip = (pageNum - 1) * limitNum;
+  const [applications, total] = await Promise.all([
+    UserApplicationModel.find({ userId })
+      .populate("jobId", "position companyName location")
+      .skip(skip)
+      .limit(limitNum),
+    UserApplicationModel.countDocuments({ userId }),
+  ]);
 
-const applications = await UserApplicationModel.find({ userId })
-      .populate("jobId", "position companyName location");
   if (!applications || applications.length === 0) {
     throw new Error("No applications found for this user.");
   }
-  return applications;
-}
+
+  return {
+     applications,
+    meta: {
+      totalItems: total,
+      itemsPerPage: limit,
+      totalPages: Math.ceil(total / limitNum),
+      page,
+    },
+  };
+};
+
 
 export const getAppliedJobsByUser = async (req :Request, ) => {
 

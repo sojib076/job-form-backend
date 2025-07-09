@@ -19,7 +19,6 @@ const createJob = async (payload: IJob , userId :string): Promise<IJob> => {
 export const getAllJobs = async (req: Request) => {
   const { companyName, location, contract, page = "1", limit = "10" ,userId } = req.query;
   
-  console.log("Query Parameters:", req.query);
 
   const filter: any = {};
 
@@ -41,7 +40,6 @@ export const getAllJobs = async (req: Request) => {
     console.log("User ID:", userId);
     filter.userId = userId;
   }
-
   const pageNum = parseInt(page as string, 10) || 1;
   const limitNum = parseInt(limit as string, 10) || 10;
   const skip = (pageNum - 1) * limitNum;
