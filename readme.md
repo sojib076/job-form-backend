@@ -19,6 +19,14 @@ This is the backend for a job application platform built using **Node.js**, **Ex
 ## 📌 Base API URL
  `http://localhost:5000/api/v1/`
 
+ ## 🔐 Auth Middleware
+
+Protected routes use a custom middleware:
+
+```js
+auth('admin') // only allows admin users
+auth('user','admin')   // allows any authenticated user
+
 ## 🔐 Auth Routes (`/auth`)
 
 | Method | Endpoint         | Description           |
@@ -30,11 +38,12 @@ This is the backend for a job application platform built using **Node.js**, **Ex
 
 ## 👤 User Application Routes (`/user`)
 
-| Method | Endpoint                      | Description                         |
-|--------|-------------------------------|-------------------------------------|
-| POST   | `/user/apply`                 | Apply for a job                     |
-| GET    | `/user/applications`          | Get all job applications (admin)    |
-| GET    | `/user/applied-jobs/:userId` | Get jobs applied by a specific user |
+
+| Method | Endpoint                      | Middleware       | Description                         |
+|--------|-------------------------------|------------------|-------------------------------------|
+| POST   | `/user/apply`                 | `auth('user')`   | Apply for a job                     |
+| GET    | `/user/applications`          | `auth('admin')`  | Get all job applications (admin)    |
+| GET    | `/user/applied-jobs/:userId` | `auth('user')`   | Get jobs applied by a user  
 
 ---
 
@@ -49,13 +58,7 @@ This is the backend for a job application platform built using **Node.js**, **Ex
 
 ---
 
-## 🔐 Auth Middleware
-
-Protected routes use a custom middleware:
-
-```js
-auth('admin') // only allows admin users
-auth()        // allows any authenticated user
+## 📦 Environment Variables
 
 NODE_ENV=development                # Set to "production" in deployment
 PORT=5000                           # The port your server will run on
